@@ -5,3 +5,10 @@
 **/!.vscode/launch.json
 **/!.vscode/extensions.json
 **/!.vscode/*.code-snippets
+
+### Rust ###
+**/debug/
+**/target/
+**/Cargo.lock
+**/*/rs.bk
+**/*.pbd
