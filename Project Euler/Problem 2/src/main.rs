@@ -6,16 +6,19 @@ fn main() {
         mediumbrain();
     }
     let smallbrain_time = start.elapsed();
+
     let start = std::time::Instant::now();
     for _ in 0..100_000 {
         mediumbrain();
     }
     let mediumbrain_time = start.elapsed();
+
     let start = std::time::Instant::now();
     for _ in 0..100_000 {
         bigbrain();
     }
     let bigbrain_time = start.elapsed();
+
     println!("Brain size\tTime\t\tAnswer");
     println!("Small\t\t{:?}\t{}", smallbrain_time, smallbrain());
     println!("Medium\t\t{:?}\t{}", mediumbrain_time, mediumbrain());
