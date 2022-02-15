@@ -1,98 +1,72 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
 fn main() {
     let start = std::time::Instant::now();
     let primes = sieve(1_000_000);
     println!("Generated primes in {:?}", start.elapsed());
-    match find_smallest(2, &primes) {
-        Some((family, idx)) => {
+
+    match find_smallest(8, &primes) {
+        Some(family) => {
             println!(
-                "Found {} to be the smallest prime, with {} as the replacement.\n{:?}",
-                family[0], idx, family
+                "Found {} to be the smallest prime, in {:?}.\n{:?}",
+                family[0],
+                start.elapsed(),
+                family
             );
         }
         None => println!("Found no valid prime"),
     }
 }
 
-fn find_smallest(digits: usize, primes: &BTreeMap<u32, bool>) -> Option<(Vec<u32>, usize)> {
-    for prime in primes.keys() {
-        if prime < &(10_u32.pow(digits as u32)) {
+fn find_smallest(family_size: usize, primes: &BTreeMap<u32, bool>) -> Option<Vec<u32>> {
+    let mut checked = HashSet::<u32>::new();
+    for prime in primes.iter().filter_map(|(k, v)| match v {
+        true => Some(k),
+        false => None,
+    }) {
+        if checked.contains(prime) {
             continue;
         }
-        print!("{:06}\r", prime);
-        let families = generate_prime_families(*prime, digits, &primes);
-        for (idx, family) in families.iter().enumerate() {
-            if family.len() == 8 {
-                return Some((family.clone(), idx));
+        print!("{:6}\r", prime);
+        for family in generate_families(*prime, primes) {
+            for sibling in family.clone() {
+                checked.insert(sibling);
+            }
+            if family.len() == family_size {
+                return Some(family);
             }
         }
     }
     None
 }
 
-fn generate_prime_families(n: u32, digits: usize, primes: &BTreeMap<u32, bool>) -> Vec<Vec<u32>> {
-    let mut family = vec![vec![]; 10];
-    for d in 0..10 {
-        family[d].append(&mut filter_primes(
-            generate_replacements(n, digits, d as u32),
-            primes,
-        ));
+fn generate_families(n: u32, primes: &BTreeMap<u32, bool>) -> Vec<Vec<u32>> {
+    let mut families = Vec::new();
+    for wildcard in generate_wildcards(n.to_string()) {
+        let mut family = Vec::new();
+        for d in 0..10 {
+            if d == 0 && wildcard.starts_with("*") {
+                continue;
+            }
+            let wc = wildcard.clone().replace("*", &d.to_string());
+            family.push(wc.parse().unwrap());
+        }
+        families.push(filter_primes(family, primes));
     }
-    return family;
+    families
 }
 
 fn filter_primes(candidates: Vec<u32>, primes: &BTreeMap<u32, bool>) -> Vec<u32> {
     candidates.into_iter().filter(|c| primes[c]).collect()
 }
 
-fn generate_replacements(n: u32, digits: usize, replace_with: u32) -> Vec<u32> {
-    let n_str = n.to_string();
-    let wc = generate_wildcards(n_str, digits);
-
-    wc.iter()
-        .filter(|s| !(s.starts_with("*") && replace_with == 0))
-        .map(|s| s.replace("*", &replace_with.to_string()).parse().unwrap())
-        .collect()
-}
-
-fn generate_wildcards(s: String, n: usize) -> Vec<String> {
-    if n == 0 {
-        return vec![s];
-    } else if s.len() == n {
-        // Return a single string where every digit is replaced by a wildcard
-        return vec![(0..n).map(|_| "*").collect()];
-    } else if s.len() > n {
-        // Recursively generate wildcards for the remaining digits
-        let mut wildcards = vec![];
-
-        // Leave the first digit, replace the rest
-        let s2 = s.clone();
-        wildcards.append(
-            &mut generate_wildcards(s2[1..].to_string(), n)
-                .iter()
-                .map(|wc| {
-                    // Get the first character from s2
-                    let c = s2.chars().next().unwrap();
-                    format!("{}{}", c, wc)
-                })
-                .collect(),
-        );
-
-        // Replace the first digit
-        let mut s3 = s.clone();
-        s3.replace_range(0..1, "*");
-        wildcards.append(
-            &mut generate_wildcards(s3[1..].to_string(), n - 1)
-                .iter()
-                .map(|wc| format!("*{}", wc))
-                .collect(),
-        );
-
-        return wildcards;
-    } else {
-        panic!("Cannot replace {} characters of \"{}\"", n, s);
+fn generate_wildcards(s: String) -> Vec<String> {
+    let mut wildcards = HashSet::new();
+    for c in s.chars() {
+        let new_s = s.clone().replace(c, "*");
+        wildcards.insert(new_s);
     }
+    wildcards.into_iter().collect()
 }
 
 // The Sieve of Eratosthenes for finding all primes less than n
