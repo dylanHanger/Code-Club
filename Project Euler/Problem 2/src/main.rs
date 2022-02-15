@@ -1,10 +1,42 @@
 const LIMIT: i32 = 4_000_000;
 fn main() {
-    println!("{}", smallbrain());
-    println!("{}", bigbrain());
+    // Compare the times of big brain and small brain
+    let start = std::time::Instant::now();
+    for _ in 0..100_000 {
+        mediumbrain();
+    }
+    let smallbrain_time = start.elapsed();
+    let start = std::time::Instant::now();
+    for _ in 0..100_000 {
+        mediumbrain();
+    }
+    let mediumbrain_time = start.elapsed();
+    let start = std::time::Instant::now();
+    for _ in 0..100_000 {
+        bigbrain();
+    }
+    let bigbrain_time = start.elapsed();
+    println!("Brain size\tTime\t\tAnswer");
+    println!("Small\t\t{:?}\t{}", smallbrain_time, smallbrain());
+    println!("Medium\t\t{:?}\t{}", mediumbrain_time, mediumbrain());
+    println!("Big\t\t{:?}\t{}", bigbrain_time, bigbrain());
 }
 
 fn smallbrain() -> i32 {
+    let mut total = 0;
+    let mut fib = [1, 1, 2];
+    while fib[2] < LIMIT {
+        if fib[2] % 2 == 0 {
+            total += fib[2];
+        }
+        fib[0] = fib[1];
+        fib[1] = fib[2];
+        fib[2] = fib[0] + fib[1];
+    }
+    total
+}
+
+fn mediumbrain() -> i32 {
     let mut total = 0;
     let mut fib = [1, 1, 2];
     while fib[2] < LIMIT {
@@ -22,8 +54,7 @@ fn smallbrain() -> i32 {
 }
 
 fn bigbrain() -> i32 {
-    // Technically less operations, but I suspect the casting and rounding might slow it down
-    // Plus, this is susceptible to precision errors and all kinds of juicy things, but it works up to at least 400M
+    // This is susceptible to precision errors and all kinds of juicy things, but it works
     let phi = (1. + f64::sqrt(5.)) / 2.;
     let phi3 = phi * phi * phi;
 
