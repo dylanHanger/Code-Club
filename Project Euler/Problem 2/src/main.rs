@@ -3,7 +3,7 @@ fn main() {
     // Compare the times of big brain and small brain
     let start = std::time::Instant::now();
     for _ in 0..100_000 {
-        mediumbrain();
+        smallbrain();
     }
     let smallbrain_time = start.elapsed();
 
