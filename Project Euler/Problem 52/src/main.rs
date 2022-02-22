@@ -2,15 +2,21 @@ use std::time::Instant;
 
 fn main() {
     let start = Instant::now();
+    let x = find_smallest(0);
     println!(
-        "Smallest is: {} (took {:?})",
-        find_smallest(),
+        "Smallest is: ({}, {}, {}, {}, {}, {}) (took {:?})",
+        x,
+        2 * x,
+        3 * x,
+        4 * x,
+        5 * x,
+        6 * x,
         start.elapsed()
     );
 }
 
-fn find_smallest() -> i32 {
-    let mut i = 100000; // Random starting point, same order of magnitde as 125874
+fn find_smallest(lower_bound: i32) -> i32 {
+    let mut i = lower_bound;
     'outer: loop {
         i += 1;
         for m in (2..=6).rev() {
