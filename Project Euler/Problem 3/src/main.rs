@@ -1,8 +1,9 @@
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, time::Instant};
 
 fn main() {
+    let start = Instant::now();
     let factors = prime_factors(600_851_475_143);
-    println!("{:?}", factors);
+    println!("{:?} ({:?})", factors, start.elapsed());
 }
 
 fn prime_factors(n: u64) -> BTreeSet<u64> {
