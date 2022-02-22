@@ -6,8 +6,7 @@ fn main() {
     println!("{:?} ({:?})", factors, start.elapsed());
 }
 
-fn prime_factors(n: u64) -> BTreeSet<u64> {
-    let mut n = n;
+fn prime_factors(mut n: u64) -> BTreeSet<u64> {
     let mut factors = BTreeSet::new();
     while n % 2 == 0 {
         factors.insert(2);
